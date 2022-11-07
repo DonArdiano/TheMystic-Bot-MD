@@ -2,13 +2,15 @@ const { levelling } = '../lib/levelling.js'
 import PhoneNumber from 'awesome-phonenumber'
 
 let handler = async (m, { conn, usedPrefix }) => {
-let pp = './Menu2.jpg'
+let pp = imagen4
 try {
 } catch (e) {
 } finally {
 let name = await conn.getName(m.sender)
 let str = `
 *_ミ💖 𝙷𝙾𝙻𝙰 ${name} 💖彡_*
+
+${(conn.user.jid == global.conn.user.jid ? '' : `Jadibot de: https://wa.me/${global.conn.user.jid.split`@`[0]}`)}
 
 ㅤㅤ *🗳️<ℂ𝔸𝕁𝔸 𝔽𝕌𝔼ℝ𝕋𝔼/>🔐*
 

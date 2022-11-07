@@ -5,7 +5,8 @@ import path, { join } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { platform } from 'process'
 import * as ws from 'ws';
-import { readdirSync, statSync, unlinkSync, existsSync, readFileSync, watch } from 'fs';
+import { readdirSync, statSync, unlinkSync, existsSync, readFileSync, rmSync } from 'fs';
+import watch from 'glob-fs'
 import yargs from 'yargs';
 import { spawn } from 'child_process';
 import lodash from 'lodash';
@@ -18,7 +19,7 @@ import { makeWASocket, protoType, serialize } from './lib/simple.js';
 import { Low, JSONFile } from 'lowdb';
 import { mongoDB, mongoDBV2 } from './lib/mongoDB.js';
 import store from './lib/store.js'
-const { useSingleFileAuthState, DisconnectReason, msgRetryCounterMap } = await import('@adiwajshing/baileys')
+const { DisconnectReason, useMultiFileAuthState } = await import('@adiwajshing/baileys')
 const { CONNECTING } = ws
 const { chain } = lodash
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
@@ -37,11 +38,7 @@ const __dirname = global.__dirname(import.meta.url)
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
 global.prefix = new RegExp('^[' + (opts['prefix'] || 'xzXZ/i!#$%+£¢€¥^°=¶∆×÷π√✓©®:;?&.\\-HhhHBb.aA').replace(/[|\\{}()[\]^$+*?.\-\^]/g, '\\$&') + ']')
 
-global.db = new Low(
-/https?:\/\//.test(opts['db'] || '') ?
-new cloudDBAdapter(opts['db']) : /mongodb(\+srv)?:\/\//i.test(opts['db']) ?
-(opts['mongodbv2'] ? new mongoDBV2(opts['db']) : new mongoDB(opts['db'])) :
-new JSONFile(`${opts._[0] ? opts._[0] + '_' : ''}database.json`))
+global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile(`${opts._[0] ? opts._[0] + '_' : ''}database.json`))
 
 global.DATABASE = global.db // Backwards Compatibility
 global.loadDatabase = async function loadDatabase() {
@@ -68,27 +65,31 @@ global.db.chain = chain(global.db.data)
 }
 loadDatabase()
 
-global.authFile = `${opts._[0] || 'session'}.data.json`
-const { state, saveState } = useSingleFileAuthState(global.authFile)
+global.authFile = `MysticSession`
+const { state, saveState, saveCreds } = await useMultiFileAuthState(global.authFile)
 
 const connectionOptions = {
 printQRInTerminal: true,
 auth: state,
 logger: P({ level: 'silent'}),
-browser: ['TheMystic-Bot','Edge','1.0.0'],
-msgRetryCounterMap,
-getMessage : async (key) => {
-let remoteJidxd = key.remoteJid.includes(":") ? key.remoteJid.split(":")[0] + "@s.whatsapp.net" : key.remoteJid
-return await store.loadMessage(remoteJidxd, key.id)}
+browser: ['TheMystic-Bot','Safari','1.0.0']
 }
 
 global.conn = makeWASocket(connectionOptions)
+/* Solucion mensajes en espera */
+//global.conn = makeWASocket({ ...connectionOptions, ...opts.connectionOptions,
+//getMessage: async (key) => (
+//opts.store.loadMessage(/** @type {string} */(key.remoteJid), key.id) ||
+//opts.store.loadMessage(/** @type {string} */(key.id)) || {}
+//).message || { conversation: 'Please send messages again' },
+//})
+
 conn.isInit = false
 
 if (!opts['test']) {
 if (global.db) setInterval(async () => {
 if (global.db.data) await global.db.write()
-if (opts['autocleartmp'] && (global.support || {}).find) (tmp = [os.tmpdir(), 'tmp'], tmp.forEach(filename => cp.spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete'])))
+if (opts['autocleartmp'] && (global.support || {}).find) (tmp = [os.tmpdir(), 'tmp', "jadibts"], tmp.forEach(filename => cp.spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete'])))
 }, 30 * 1000)}
 
 if (opts['server']) (await import('./server.js')).default(global.conn, PORT)
@@ -97,6 +98,43 @@ function clearTmp() {
 const tmp = [tmpdir(), join(__dirname, './tmp')]
 const filename = []
 tmp.forEach(dirname => readdirSync(dirname).forEach(file => filename.push(join(dirname, file))))
+//const ignoreDir = (filePath) => filePath.includes('creds.js');
+/* Y ese fue el momazo mas bueno del mundo
+   Aunque no dudara tan solo un segundo
+   Mas no me arrepiento de haberme reido
+   Por que la grasa es un sentimiento
+   Y ese fue el momazo mas bueno del mundo
+   Aunque no dudara tan solo un segundo
+   que me arrepiento de ser un grasoso
+    Por que la grasa es un sentimiento
+    -El waza 👻👻👻👻 (Aiden)
+
+*/
+readdirSync("./jadibts").forEach(file => {
+    const btprs = function (folder) {
+        console.log(folder)
+        let status = false
+        Object.keys(global.conns).forEach((key) => {
+            if (global.conns[key].uniqid == folder) status = true
+        });
+        return status
+    }
+    let lrp = btprs(file)
+    console.log(lrp)
+    if (!lrp) {rmSync("./jadibts/" + file, { recursive: true, force: true })}
+    else if (lrp){
+        try {
+    readdirSync("./jadibts/" + file).forEach(file2 => {
+        if (file2 !== "creds.json") {
+            unlinkSync("./jadibts/" + file + "/" + file2)
+        } 
+    })
+    } catch {}}})
+    
+//const ignoreDir2 = (filePath) => filePath.includes('creds.js');    
+readdirSync("./MysticSession").forEach(file => {
+    if (file !== 'creds.json') {
+        unlinkSync("./MysticSession/" + file, { recursive: true, force: true })}})    
 return filename.map(file => {
 const stats = statSync(file)
 if (stats.isFile() && (Date.now() - stats.mtimeMs >= 1000 * 60 * 3)) return unlinkSync(file) // 3 minutes
@@ -104,7 +142,6 @@ return false
 })}
 
 async function connectionUpdate(update) {
-let pp = './src/nuevobot.jpg'
 const { connection, lastDisconnect, isNewLogin } = update
 if (isNewLogin) conn.isInit = true
 const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode
@@ -114,7 +151,7 @@ global.timestamp.connect = new Date
 }
 if (global.db.data == null) loadDatabase()
 if (connection == 'open') {
-console.log(chalk.yellow('▣─────────────────────────────···\n│\n│❧ 𝙲𝙾𝙽𝙴𝙲𝚃𝙰𝙳𝙾 𝙲𝙾𝚁𝚁𝙴𝙲𝚃𝙰𝙼𝙴𝙽𝚃𝙴 𝙰𝙻 𝚆𝙷𝙰𝚃𝚂𝙰𝙿𝙿 ✅\n│\n▣─────────────────────────────···'))}
+console.log(chalk.yellow('▣──────────────────────────────···\n│\n│❧ 𝙲𝙾𝙽𝙴𝙲𝚃𝙰𝙳𝙾 𝙲𝙾𝚁𝚁𝙴𝙲𝚃𝙰𝙼𝙴𝙽𝚃𝙴 𝙰𝙻 𝚆𝙷𝙰𝚃𝚂𝙰𝙿𝙿 ✅\n│\n▣──────────────────────────────···'))}
 }
 
 process.on('uncaughtException', console.error)
@@ -140,6 +177,7 @@ conn.ev.off('messages.upsert', conn.handler)
 conn.ev.off('group-participants.update', conn.participantsUpdate)
 conn.ev.off('groups.update', conn.groupsUpdate)
 conn.ev.off('message.delete', conn.onDelete)
+conn.ev.off('call', conn.onCall)
 conn.ev.off('connection.update', conn.connectionUpdate)
 conn.ev.off('creds.update', conn.credsUpdate)
 }
@@ -157,12 +195,15 @@ conn.handler = handler.handler.bind(global.conn)
 conn.participantsUpdate = handler.participantsUpdate.bind(global.conn)
 conn.groupsUpdate = handler.groupsUpdate.bind(global.conn)
 conn.onDelete = handler.deleteUpdate.bind(global.conn)
+conn.onCall = handler.callUpdate.bind(global.conn)
 conn.connectionUpdate = connectionUpdate.bind(global.conn)
-conn.credsUpdate = saveState.bind(global.conn, true)
+conn.credsUpdate = saveCreds.bind(global.conn, true)
+
 conn.ev.on('messages.upsert', conn.handler)
 conn.ev.on('group-participants.update', conn.participantsUpdate)
 conn.ev.on('groups.update', conn.groupsUpdate)
 conn.ev.on('message.delete', conn.onDelete)
+conn.ev.on('call', conn.onCall)
 conn.ev.on('connection.update', conn.connectionUpdate)
 conn.ev.on('creds.update', conn.credsUpdate)
 isInit = false
@@ -234,8 +275,8 @@ Object.freeze(global.support)
 }
 setInterval(async () => {
 var a = await clearTmp()
-console.log(chalk.cyanBright(`\n▣────────[ 𝙰𝚄𝚃𝙾𝙲𝙻𝙴𝙰𝚁𝚃𝙼𝙿 ]───────────···\n│\n▣─❧ 𝙰𝚁𝙲𝙷𝙸𝚅𝙾𝚂 𝙴𝙻𝙸𝙼𝙸𝙽𝙰𝙳𝙾𝚂 ✅\n│\n▣────────────────────────────────────···\n`))
+console.log(chalk.cyanBright(`\n▣─────────[ 𝙰𝚄𝚃𝙾𝙲𝙻𝙴𝙰𝚁𝚃𝙼𝙿 ]────────────···\n│\n▣─❧ 𝙰𝚁𝙲𝙷𝙸𝚅𝙾𝚂 𝙴𝙻𝙸𝙼𝙸𝙽𝙰𝙳𝙾𝚂 ✅\n│\n▣─────────────────────────────────────···\n`))
 }, 180000)
 _quickTest()
-.then()
+.then(() => conn.logger.info(`Ƈᴀʀɢᴀɴᴅᴏ．．．\n`))
 .catch(console.error)
