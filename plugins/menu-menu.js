@@ -201,6 +201,7 @@ ${readMore}
 ┃≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡┃
 ┣ ඬ⃟ 💎 _${usedPrefix}add *<numero>*_
 ┣ ඬ⃟ 💎 _${usedPrefix}kick *<@tag>*_
+┣ ඬ⃟ 💎 _${usedPrefix}kick2 *<@tag>*_
 ┣ ඬ⃟ 💎 _${usedPrefix}grupo *<abrir / cerrar>*_
 ┣ ඬ⃟ 💎 _${usedPrefix}grouptime *<opcion> <tiempo>*_
 ┣ ඬ⃟ 💎 _${usedPrefix}promote *<@tag>*_
@@ -495,18 +496,24 @@ ${readMore}
 ┏━━━━━━━━━━━━━━━━━━━┓
 ┃ *< ℝℙ𝔾 - 𝕃𝕀𝕄𝕀𝕋𝔼𝕊 - 𝔼ℂ𝕆ℕ𝕆𝕄𝕀𝔸 />*
 ┃≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡┃
-┣ ඬ⃟ 💵 _${usedPrefix}transfer *<tipo> <cantidad> <@tag>*_
+┣ ඬ⃟ 💵 _${usedPrefix}adventure_
+┣ ඬ⃟ 💵 _${usedPrefix}cazar_
+┣ ඬ⃟ 💵 _${usedPrefix}cofre_
 ┣ ඬ⃟ 💵 _${usedPrefix}balance_
 ┣ ඬ⃟ 💵 _${usedPrefix}claim_
+┣ ඬ⃟ 💵 _${usedPrefix}heal_
 ┣ ඬ⃟ 💵 _${usedPrefix}lb_
 ┣ ඬ⃟ 💵 _${usedPrefix}levelup_
 ┣ ඬ⃟ 💵 _${usedPrefix}myns_
 ┣ ඬ⃟ 💵 _${usedPrefix}perfil_
 ┣ ඬ⃟ 💵 _${usedPrefix}work_
 ┣ ඬ⃟ 💵 _${usedPrefix}minar_
+┣ ඬ⃟ 💵 _${usedPrefix}minar2_
 ┣ ඬ⃟ 💵 _${usedPrefix}buy_
 ┣ ඬ⃟ 💵 _${usedPrefix}buyall_
 ┣ ඬ⃟ 💵 _${usedPrefix}verificar_
+┣ ඬ⃟ 💵 _${usedPrefix}robar *<cantidad> <@tag>*_
+┣ ඬ⃟ 💵 _${usedPrefix}transfer *<tipo> <cantidad> <@tag>*_
 ┣ ඬ⃟ 💵 _${usedPrefix}unreg *<numero de serie>*_
 ┗━━━━━━━━━━━━━━━━━━━┛
 
